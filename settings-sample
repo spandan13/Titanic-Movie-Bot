@@ -1,0 +1,13 @@
+[BotSettings]
+
+screencaps_path = 
+
+# Credentials from developer.twitter.com
+consumer_key = 
+consumer_secret = 
+access_token = 
+access_token_secret = 
+
+## DO NOT EDIT BELOW VALUEs
+## THIS IS SET AUTOMATICALLY BY THE BOT
+last_tweet_id = 0
