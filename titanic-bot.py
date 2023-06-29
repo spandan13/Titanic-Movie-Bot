@@ -1,5 +1,6 @@
-import os, json, tweepy, time
+import os, json, tweepy, time, ast
 import configparser
+from datetime import datetime
 
 # Initialising settings file
 config = configparser.ConfigParser()
@@ -31,7 +32,10 @@ def get_content(lines):
     subsjson_raw = open("titanic-subs.json", 'r', encoding="utf-8")
     subsjson = json.load(subsjson_raw)
     last_ID = int(lines[-1].split("= ")[-1].split('\n')[0])
-    content = subsjson[last_ID+1]
+    if last_ID == (len(subsjson)-1):
+        content = subsjson[0]
+    else:
+        content = subsjson[last_ID+1]
     current_ID = content['ID']
     timestamp = content['timestamp']
     seconds = content['seconds']
@@ -50,16 +54,22 @@ def get_content(lines):
             cap_time-=1
     return current_ID,timestamp,subs,screencap
 
-with open("settings", 'r', encoding="utf-8") as settings_file:
-    lines = settings_file.readlines()
-id,timestamp,sub,screencap = get_content(lines)
-tweet_text = f'\U000027A1 {timestamp}\n{sub}'
+def run_bot():
+    with open("settings", 'r', encoding="utf-8") as settings_file:
+        lines = settings_file.readlines()
+    id,timestamp,sub,screencap = get_content(lines)
+    tweet_text = f'\U000027A1 {timestamp}\n{sub}'
+    media = api.media_upload(screencap)
+    media_id = media.media_id
+    tweet = Client.create_tweet(media_ids=[media_id], text=tweet_text)
+    tweet_id = tweet[0]["id"]
+    print(f'ID: {id}\nPosted: {sub}\nTweetID: {tweet_id}')
+    lines[-1] = "last_tweet_id = " + str(id)    
+    with open("settings", 'w', encoding="utf-8") as settings_file:
+        settings_file.writelines(lines)
 
-media = api.media_upload(screencap)
-media_id = media.media_id
-tweet = Client.create_tweet(media_ids=[media_id], text=tweet_text)
-tweet_id = tweet[0]["id"]
-print(f'ID: {id}\nPosted: {sub}\nTweetID: {tweet_id}')
-lines[-1] = "last_tweet_id = " + str(id)    
-with open("settings", 'w', encoding="utf-8") as settings_file:
-    settings_file.writelines(lines)
+# Run bot only at set interval
+current_time = datetime.now().strftime("%H:%M")
+for time in (ast.literal_eval(settings["time_intervals"])):
+    if str(current_time) == str(time):
+        run_bot()

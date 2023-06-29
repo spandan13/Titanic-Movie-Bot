@@ -2,6 +2,8 @@
 
 screencaps_path = 
 
+time_intervals = []
+
 # Credentials from developer.twitter.com
 consumer_key = 
 consumer_secret = 
